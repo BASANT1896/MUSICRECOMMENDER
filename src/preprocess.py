@@ -60,14 +60,10 @@ logging.info("📐 Calculating cosine similarity...")
 cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
 logging.info("✅ Cosine similarity matrix generated.")
 
-# ✅ Embed cosine similarity into the DataFrame
-logging.info("📎 Embedding similarities into df...")
-df['similarities'] = list(cosine_sim)
-
-# Save everything
-joblib.dump(df, 'df_cleaned.pkl')
-joblib.dump(tfidf_matrix, 'tfidf_matrix.pkl')
-joblib.dump(cosine_sim, 'cosine_sim.pkl')
+# ❌ Don't embed similarities in df
+# ✅ Save separately
+joblib.dump(df, 'df_cleaned.pkl')          # ✅ light
+joblib.dump(cosine_sim, 'cosine_sim.pkl')  # ❌ heavy
 logging.info("💾 Data saved to disk.")
 
 logging.info("✅ Preprocessing complete.")
