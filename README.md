@@ -20,6 +20,6 @@ Hosted on Streamlit Cloud
 ✅ Accuracy
 Achieved up to 85% accurate recommendations on curated test sets based on lyrical and genre similarity.
 
-🌐 Live App
-👉 [TRY IT LIVE]([https://your-link.com](https://musicrecommender-wsq9ymvskgyht2hqwsstve.streamlit.app/))
+🌐 Live App  
+👉 [TRY IT LIVE](https://musicrecommender-wsq9ymvskgyht2hqwsstve.streamlit.app/)
 
