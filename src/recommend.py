@@ -1,6 +1,7 @@
-# recommend.py
+#recommend.py
 import joblib
 import logging
+import os
 
 # Setup logging
 logging.basicConfig(
@@ -14,12 +15,17 @@ logging.basicConfig(
 
 logging.info("🔁 Loading data...")
 try:
-    df = joblib.load('df_cleaned.pkl')
-    cosine_sim = joblib.load('cosine_sim.pkl')
+    base_dir = os.path.dirname(__file__)
+    df_path = os.path.join(base_dir, 'df_cleaned.pkl')
+    cosine_sim_path = os.path.join(base_dir, 'cosine_sim.pkl')
+
+    df = joblib.load(df_path)
+    cosine_sim = joblib.load(cosine_sim_path)
     logging.info("✅ Data loaded successfully.")
 except Exception as e:
     logging.error("❌ Failed to load required files: %s", str(e))
     raise e
+
 
 
 def recommend_songs(song_name, top_n=5):
