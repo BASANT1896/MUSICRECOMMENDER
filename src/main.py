@@ -1,6 +1,6 @@
-# app.py
+#main.py
 import streamlit as st
-from recommend import load_data, recommend_songs
+from recommend import recommend_songs, df
 
 # Set Streamlit page config
 st.set_page_config(
@@ -11,26 +11,18 @@ st.set_page_config(
 
 st.title("🎶 Instant Music Recommender")
 
-# File upload section
-st.sidebar.header("🔽 Upload Required Files")
-df_file = st.sidebar.file_uploader("Upload `df_cleaned.pkl`", type="pkl")
-sim_file = st.sidebar.file_uploader("Upload `cosine_sim.pkl`", type="pkl")
-
-# Load files
-if df_file and sim_file:
-    with st.spinner("Loading uploaded files..."):
-        df, cosine_sim = load_data(df_file, sim_file)
-
+# Check if DataFrame was loaded successfully
+if df is None:
+    st.error("❌ Failed to load dataset. Please check your df_cleaned.pkl in the `src/` folder.")
+else:
     song_list = sorted(df['song'].dropna().unique())
     selected_song = st.selectbox("🎵 Select a song:", song_list)
 
     if st.button("🚀 Recommend Similar Songs"):
         with st.spinner("Finding similar songs..."):
-            recommendations = recommend_songs(df, cosine_sim, selected_song)
+            recommendations = recommend_songs(selected_song)
             if recommendations is None:
                 st.warning("⚠️ Song not found.")
             else:
                 st.success("✅ Top similar songs:")
                 st.table(recommendations)
-else:
-    st.info("📂 Please upload both `.pkl` files from your local system.")
