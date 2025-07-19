@@ -1,25 +1,28 @@
-# recommend.py
+#recommend.py
+import os
 import joblib
 import logging
+from pathlib import Path
 
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
     format='[%(asctime)s] %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("recommend.log", encoding="utf-8"),
-        logging.StreamHandler()
-    ]
 )
 
-logging.info("🔁 Loading data...")
+# Use absolute path to df_cleaned.pkl inside src/
+df_path = Path(__file__).parent / "df_cleaned.pkl"
+
 try:
-    df = joblib.load('df_cleaned.pkl')
-    cosine_sim = joblib.load('cosine_sim.pkl')
-    logging.info("✅ Data loaded successfully.")
+    logging.info(f"📄 Loading from: {df_path}")
+    df = joblib.load(df_path)
+    if 'similarities' not in df.columns:
+        raise ValueError("Missing 'similarities' column in df_cleaned.pkl")
+    logging.info("✅ df_cleaned.pkl loaded successfully.")
 except Exception as e:
-    logging.error("❌ Failed to load required files: %s", str(e))
-    raise e
+    logging.error("❌ Failed to load df_cleaned.pkl: %s", str(e))
+    df = None
+    raise e  # <- important so you know it fails during dev
 
 
 def recommend_songs(song_name, top_n=5):
