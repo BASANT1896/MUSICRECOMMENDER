@@ -1,5 +1,3 @@
-# recommend.py
-
 import pandas as pd
 import re
 import nltk
@@ -14,9 +12,12 @@ import streamlit as st
 nltk.download('punkt')
 nltk.download('stopwords')
 
+# 🔗 Direct CSV download link from Google Drive (replace with your actual ID)
+CSV_URL = "https://drive.google.com/uc?export=download&id=11bDfYWouSlavEVADUQszrfaaKzV6KCup"
+
 @st.cache_data(show_spinner=False)
 def load_df():
-    df = pd.read_csv("spotify_millsongdata.csv").sample(5000).drop(columns=["link"], errors="ignore").reset_index(drop=True)
+    df = pd.read_csv(CSV_URL).sample(5000).drop(columns=["link"], errors="ignore").reset_index(drop=True)
     stop_words = set(stopwords.words('english'))
 
     def preprocess(text):
