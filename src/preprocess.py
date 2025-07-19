@@ -1,4 +1,4 @@
-# preprocess.py
+#preprocess.py
 import pandas as pd
 import re
 import nltk
@@ -59,18 +59,19 @@ tfidf_matrix = tfidf.fit_transform(df['cleaned_text'])
 logging.info("✅ TF-IDF matrix shape: %s", tfidf_matrix.shape)
 
 # Cosine similarity
-logging.info("📐 Calculating cosine similarity matrix (may take time)...")
+logging.info("📐 Calculating cosine similarity (this may take time)...")
 cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
 logging.info("✅ Cosine similarity computed.")
 
-# Save outputs
-def save_file(obj, filename):
-    joblib.dump(obj, filename)
-    size = os.path.getsize(filename) / (1024 * 1024)
-    logging.info(f"💾 Saved {filename} ({size:.2f} MB)")
+# Embed similarity into DataFrame
+df['similarities'] = list(cosine_sim)
+logging.info("🧬 Similarity vectors embedded into DataFrame.")
 
-save_file(df, 'df_cleaned.pkl')
-save_file(tfidf_matrix, 'tfidf_matrix.pkl')
-save_file(cosine_sim, 'cosine_sim.pkl')  # Optional: comment out if too big
+# Save final DataFrame
+filename = 'df_cleaned.pkl'
+joblib.dump(df, filename)
+size = os.path.getsize(filename) / (1024 * 1024)
+logging.info(f"💾 Saved {filename} ({size:.2f} MB)")
 
-logging.info("✅ All files saved. Preprocessing complete.")
+logging.info("✅ Preprocessing complete.")
+
