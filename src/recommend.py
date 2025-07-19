@@ -1,46 +1,45 @@
 # recommend.py
 
 import pandas as pd
+import re
+import nltk
 import joblib
 import logging
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import streamlit as st
 
-logging.basicConfig(level=logging.INFO)
-df_path = "df_cleaned.pkl"
+nltk.download('punkt')
+nltk.download('stopwords')
 
-@st.cache_data(show_spinner="📦 Loading data...")
+@st.cache_data(show_spinner=False)
 def load_df():
-    try:
-        logging.info(f"📄 Loading df from: {df_path}")
-        df = joblib.load(df_path)
-        if 'cleaned_text' not in df.columns:
-            raise ValueError("Missing 'cleaned_text' column in df_cleaned.pkl")
-        return df
-    except Exception as e:
-        logging.error("❌ Failed to load df_cleaned.pkl: %s", str(e))
-        raise e
+    df = pd.read_csv("spotify_millsongdata.csv").sample(5000).drop(columns=["link"], errors="ignore").reset_index(drop=True)
+    stop_words = set(stopwords.words('english'))
 
-@st.cache_resource(show_spinner="🔄 Computing similarity...")
+    def preprocess(text):
+        text = re.sub(r"[^a-zA-Z\s]", "", str(text))
+        tokens = word_tokenize(text.lower())
+        return " ".join([word for word in tokens if word not in stop_words])
+
+    df["cleaned_text"] = df["text"].apply(preprocess)
+    return df
+
+@st.cache_resource(show_spinner=False)
 def compute_similarity(df):
-    logging.info("📐 Computing TF-IDF and cosine similarity...")
     tfidf = TfidfVectorizer(max_features=5000)
-    tfidf_matrix = tfidf.fit_transform(df['cleaned_text'])
-    cosine_sim = cosine_similarity(tfidf_matrix)
+    tfidf_matrix = tfidf.fit_transform(df["cleaned_text"])
+    cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
     return cosine_sim
 
-def recommend_songs(df, cosine_sim, title, top_n=5):
-    title = title.lower()
-    indices = df[df['title'].str.lower() == title].index
+def recommend_songs(df, cosine_sim, song_name, top_n=5):
+    if song_name not in df["song"].values:
+        return None
 
-    if len(indices) == 0:
-        return []
-
-    idx = indices[0]
-    similarity_scores = list(enumerate(cosine_sim[idx]))
-    similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)[1:top_n + 1]
-    song_indices = [i[0] for i in similarity_scores]
-
-    return df.iloc[song_indices][['title', 'artist']].to_dict(orient='records')
-
+    idx = df[df["song"] == song_name].index[0]
+    sim_scores = list(enumerate(cosine_sim[idx]))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)[1:top_n+1]
+    recommended = df.iloc[[i[0] for i in sim_scores]][["artist", "song"]]
+    return recommended
