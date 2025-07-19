@@ -1,4 +1,4 @@
-🎵 Music Recommender
+#🎵 Music Recommender
 This is an intelligent music recommendation web app built using Streamlit and Scikit-learn. The app recommends songs similar to a user-selected track based on lyrical and feature-based similarity using TF-IDF Vectorization and Cosine Similarity.
 
 🚀 Features
