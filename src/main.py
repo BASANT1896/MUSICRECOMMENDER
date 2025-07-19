@@ -23,7 +23,7 @@ selected_song = st.selectbox("🎵 Select a song:", song_list)
 if st.button("🚀 Recommend Similar Songs"):
     with st.spinner("Finding similar songs..."):
         recommendations = recommend_songs(df, cosine_sim, selected_song)
-        if not recommendations:
+        if recommendations is None or recommendations.empty:
             st.warning("Sorry, song not found.")
         else:
             st.success("Top similar songs:")
