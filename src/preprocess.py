@@ -4,6 +4,7 @@ import re
 import nltk
 import joblib
 import logging
+import os
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -21,21 +22,23 @@ logging.basicConfig(
 
 logging.info("🚀 Starting preprocessing...")
 
+# Download required NLTK resources
 nltk.download('punkt')
 nltk.download('stopwords')
 
 # Load and sample dataset
+csv_path = "spotify_millsongdata.csv"
 try:
-    df = pd.read_csv("spotify_millsongdata.csv").sample(10000)
+    df = pd.read_csv(csv_path).sample(10000)
     logging.info("✅ Dataset loaded and sampled: %d rows", len(df))
 except Exception as e:
     logging.error("❌ Failed to load dataset: %s", str(e))
     raise e
 
-# Drop link column and preprocess
+# Drop 'link' column if exists
 df = df.drop(columns=['link'], errors='ignore').reset_index(drop=True)
 
-# Text cleaning
+# Preprocess lyrics text
 stop_words = set(stopwords.words('english'))
 
 def preprocess_text(text):
@@ -45,25 +48,29 @@ def preprocess_text(text):
     tokens = [word for word in tokens if word not in stop_words]
     return " ".join(tokens)
 
-logging.info("🧹 Cleaning text...")
+logging.info("🧹 Cleaning lyrics text...")
 df['cleaned_text'] = df['text'].apply(preprocess_text)
-logging.info("✅ Text cleaned.")
+logging.info("✅ Text cleaning complete.")
 
 # Vectorization
-logging.info("🔠 Vectorizing using TF-IDF...")
+logging.info("🔠 Vectorizing with TF-IDF...")
 tfidf = TfidfVectorizer(max_features=5000)
 tfidf_matrix = tfidf.fit_transform(df['cleaned_text'])
 logging.info("✅ TF-IDF matrix shape: %s", tfidf_matrix.shape)
 
 # Cosine similarity
-logging.info("📐 Calculating cosine similarity...")
+logging.info("📐 Calculating cosine similarity matrix (may take time)...")
 cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
-logging.info("✅ Cosine similarity matrix generated.")
+logging.info("✅ Cosine similarity computed.")
 
-# Save everything
-joblib.dump(df, 'df_cleaned.pkl')
-joblib.dump(tfidf_matrix, 'tfidf_matrix.pkl')
-joblib.dump(cosine_sim, 'cosine_sim.pkl')
-logging.info("💾 Data saved to disk.")
+# Save outputs
+def save_file(obj, filename):
+    joblib.dump(obj, filename)
+    size = os.path.getsize(filename) / (1024 * 1024)
+    logging.info(f"💾 Saved {filename} ({size:.2f} MB)")
 
-logging.info("✅ Preprocessing complete.")
+save_file(df, 'df_cleaned.pkl')
+save_file(tfidf_matrix, 'tfidf_matrix.pkl')
+save_file(cosine_sim, 'cosine_sim.pkl')  # Optional: comment out if too big
+
+logging.info("✅ All files saved. Preprocessing complete.")
