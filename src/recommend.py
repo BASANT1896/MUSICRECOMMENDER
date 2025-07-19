@@ -16,8 +16,9 @@ df_path = Path(__file__).parent / "df_cleaned.pkl"
 try:
     logging.info(f"📄 Loading from: {df_path}")
     df = joblib.load(df_path)
-    if 'similarities' not in df.columns:
-        raise ValueError("Missing 'similarities' column in df_cleaned.pkl")
+       
+    cosine_sim = joblib.load("cosine_sim.pkl")
+
     logging.info("✅ df_cleaned.pkl loaded successfully.")
 except Exception as e:
     logging.error("❌ Failed to load df_cleaned.pkl: %s", str(e))
